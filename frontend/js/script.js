@@ -4,17 +4,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const convertBtn = document.getElementById('convert-btn');
     const outputArea = document.getElementById('output-area');
     const copyBtn = document.getElementById('copy-btn');
-    const btnText = convertBtn.querySelector('span');
+    const btnText = convertBtn.querySelector('.btn-text');
     const spinner = convertBtn.querySelector('.spinner');
 
     const MAX_CHARS = 500;
-    const API_URL = '/api/convert'; // 이제 상대 경로로 API를 호출합니다.
+    const API_URL = '/api/convert';
 
-    // 1. 글자 수 카운터 업데이트
-    textInput.addEventListener('input', () => {
+    // 1. 글자 수 카운터 업데이트 및 초기화
+    function updateCharCount() {
         const currentLength = textInput.value.length;
         charCounter.textContent = `${currentLength} / ${MAX_CHARS}`;
-    });
+        
+        if (currentLength >= MAX_CHARS) {
+            charCounter.classList.add('text-red-500');
+            charCounter.classList.remove('text-slate-400');
+        } else {
+            charCounter.classList.remove('text-red-500');
+            charCounter.classList.add('text-slate-400');
+        }
+    }
+
+    textInput.addEventListener('input', updateCharCount);
+    updateCharCount();
 
     // 2. 변환 버튼 클릭 이벤트
     convertBtn.addEventListener('click', async () => {
@@ -26,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 로딩 상태 시작
         setLoading(true);
 
         try {
@@ -52,26 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("API Error:", error);
             displayError("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         } finally {
-            // 로딩 상태 종료
             setLoading(false);
         }
     });
 
     // 3. 복사 버튼 클릭 이벤트
     copyBtn.addEventListener('click', () => {
-        const textToCopy = outputArea.textContent;
-        if (textToCopy && textToCopy !== '결과가 여기에 표시됩니다.') {
+        const textToCopy = outputArea.innerText.trim();
+        const placeholderText = '입력한 내용이 여기에 변환되어 표시됩니다.';
+        
+        if (textToCopy && textToCopy !== placeholderText) {
             navigator.clipboard.writeText(textToCopy).then(() => {
-                // 복사 성공 피드백
+                const originalText = '복사하기';
                 copyBtn.textContent = '복사 완료!';
-                copyBtn.classList.add('copied');
+                copyBtn.classList.replace('text-primary-600', 'text-green-600');
+                
                 setTimeout(() => {
-                    copyBtn.textContent = '복사하기';
-                    copyBtn.classList.remove('copied');
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.replace('text-green-600', 'text-primary-600');
                 }, 2000);
             }).catch(err => {
                 console.error('Copy failed', err);
-                alert('복사에 실패했습니다.');
             });
         }
     });
@@ -80,18 +91,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function setLoading(isLoading) {
         if (isLoading) {
             convertBtn.disabled = true;
-            btnText.style.display = 'none';
-            spinner.style.display = 'block';
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
         } else {
             convertBtn.disabled = false;
-            btnText.style.display = 'inline';
-            spinner.style.display = 'none';
+            btnText.classList.remove('hidden');
+            spinner.classList.add('hidden');
         }
     }
 
     // 결과 표시 함수
     function displayResult(data) {
-        outputArea.innerHTML = ''; // 이전 내용 삭제
+        outputArea.innerHTML = '';
         const p = document.createElement('p');
         p.textContent = data.converted_text;
         outputArea.appendChild(p);
@@ -100,10 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 오류 표시 함수
     function displayError(message) {
-        outputArea.innerHTML = ''; // 이전 내용 삭제
+        outputArea.innerHTML = '';
         const p = document.createElement('p');
-        p.className = 'error-message';
-        p.style.color = 'var(--error-color)';
+        p.className = 'text-red-500 font-medium';
         p.textContent = message;
         outputArea.appendChild(p);
         copyBtn.disabled = true;
