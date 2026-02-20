@@ -7,15 +7,23 @@ from dotenv import load_dotenv
 # .env 파일에서 환경 변수 로드
 load_dotenv()
 
-app = Flask(__name__)
-# CORS 설정: 모든 도메인에서 오는 요청을 허용합니다. 
-# 실제 프로덕션 환경에서는 특정 도메인만 허용하도록 수정해야 합니다.
+# Flask 앱 설정: frontend 폴더를 정적 파일 루트로 지정
+# static_url_path=''는 /css/style.css와 같이 루트에서 바로 접근하게 해줍니다.
+app = Flask(__name__, static_folder='../frontend', static_url_path='')
+
+# 동일 출처(same-origin)에서 제공되므로 CORS는 이제 선택사항이지만,
+# 다른 환경에서의 유연성을 위해 유지할 수 있습니다.
 CORS(app)
 
 # Groq 클라이언트 초기화 (API 키는 환경 변수에서 가져옵니다)
 # client = Groq(
 #     api_key=os.environ.get("GROQ_API_KEY"),
 # )
+
+@app.route('/')
+def serve_index():
+    """루트 URL 요청 시 frontend/index.html 파일을 제공합니다."""
+    return app.send_static_file('index.html')
 
 @app.route('/api/convert', methods=['POST'])
 def convert_tone():
@@ -41,4 +49,4 @@ def convert_tone():
 
 if __name__ == '__main__':
     # 디버그 모드로 Flask 앱을 실행합니다.
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000)
