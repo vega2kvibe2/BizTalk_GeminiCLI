@@ -17,12 +17,12 @@ CORS(app)
 
 # Groq 클라이언트 초기화
 try:
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    model = Groq(api_key=os.environ.get("GROQ_API_KEY"))
     if not os.environ.get("GROQ_API_KEY"):
         logging.warning("GROQ_API_KEY 환경 변수가 설정되지 않았습니다. API 호출이 실패할 수 있습니다.")
 except Exception as e:
     logging.error(f"Groq 클라이언트 초기화 실패: {e}")
-    client = None
+    model = None
 
 # 대상별 시스템 프롬프트 정의
 PROMPT_TEMPLATES = {
@@ -68,8 +68,8 @@ def convert_tone():
     """
     사용자로부터 텍스트와 변환 대상을 받아, Groq AI를 통해 변환된 텍스트를 반환합니다.
     """
-    if not client:
-        logging.error("Groq 클라이언트가 초기화되지 않았습니다.")
+    if not model:
+        logging.error("Groq 모델이 초기화되지 않았습니다.")
         return jsonify({"error": "AI 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}), 503
 
     if not request.json or 'text' not in request.json or 'target' not in request.json:
@@ -87,7 +87,7 @@ def convert_tone():
     logging.info(f"변환 요청: 대상={target}, 원문='{user_text[:30]}...'")
 
     try:
-        chat_completion = client.chat.completions.create(
+        chat_completion = model.chat.completions.create(
             messages=[
                 {
                     "role": "system",
