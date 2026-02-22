@@ -16,9 +16,11 @@ app = Flask(__name__, static_folder='../frontend', static_url_path='')
 CORS(app)
 
 # Groq 클라이언트 초기화
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+
 try:
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-    if not os.environ.get("GROQ_API_KEY"):
+    client = Groq(api_key=GROQ_API_KEY)
+    if not GROQ_API_KEY:
         logging.warning("GROQ_API_KEY 환경 변수가 설정되지 않았습니다. API 호출이 실패할 수 있습니다.")
 except Exception as e:
     logging.error(f"Groq 클라이언트 초기화 실패: {e}")
