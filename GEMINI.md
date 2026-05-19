@@ -19,7 +19,7 @@
 
 | 영역 | 기술 |
 |------|------|
-| **프론트엔드** | HTML5, CSS3, JavaScript (Vanilla JS) |
+| **프론트엔드** | HTML5, CSS3 (Tailwind CSS), JavaScript (Vanilla JS) |
 | **백엔드** | Python 3.11+, FastAPI, Uvicorn |
 | **AI/LLM** | Upstage Solar-Pro2, LangChain, langchain-upstage |
 | **배포** | Vercel (프론트엔드), GitHub |

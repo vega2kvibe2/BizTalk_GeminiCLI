@@ -83,27 +83,27 @@ AI도 사람도 "끝"의 기준이 명확해야 헤매지 않습니다. 기준 �
 
 ### 백엔드
 
-- [ ] FastAPI 서버가 로컬에서 정상 실행된다 (`uvicorn main:app`)
-- [ ] Health Check 기능이 존재해야 한다
-- [ ] `POST /api/convert` 엔드포인트가 존재한다
-- [ ] Upstage Solar-Pro2 API 호출이 정상 작동한다
-- [ ] 수신 대상(4종)에 따라 다른 프롬프트가 적용된다
-- [ ] CORS 설정이 되어 있어 프론트엔드에서 호출 가능하다
-- [ ] 프론트엔드 `index.html` 페이지가 FastAPI에 서버에서 요청되도록 static page 라우팅 기능이 있어야 한다
-- [ ] `.env` 파일로 API 키를 관리하고, `.gitignore`에 등록되어 있다
+- [x] FastAPI 서버가 로컬에서 정상 실행된다 (`uvicorn main:app`)
+- [x] Health Check 기능이 존재해야 한다
+- [x] `POST /api/convert` 엔드포인트가 존재한다
+- [x] Upstage Solar-Pro2 API 호출이 정상 작동한다
+- [x] 수신 대상(4종)에 따라 다른 프롬프트가 적용된다
+- [x] CORS 설정이 되어 있어 프론트엔드에서 호출 가능하다
+- [x] 프론트엔드 `index.html` 페이지가 FastAPI에 서버에서 요청되도록 static page 라우팅 기능이 있어야 한다
+- [x] `.env` 파일로 API 키를 관리하고, `.gitignore`에 등록되어 있다
 
 ### 프론트엔드
 
-- [ ] 텍스트 입력창이 있다
-- [ ] 수신 대상 선택 버튼이 있다 (4종)
-- [ ] [변환하기] 버튼 클릭 시 API를 호출한다
-- [ ] 처리 중 로딩 표시가 나타난다
-- [ ] 변환 결과가 화면에 출력된다
-- [ ] [복사하기] 버튼이 작동한다
+- [x] 텍스트 입력창이 있다
+- [x] 수신 대상 선택 버튼이 있다 (4종)
+- [x] [변환하기] 버튼 클릭 시 API를 호출한다
+- [x] 처리 중 로딩 표시가 나타난다
+- [x] 변환 결과가 화면에 출력된다
+- [x] [복사하기] 버튼이 작동한다
 
 ### 배포
 
-- [ ] GitHub 레포지토리에 코드가 올라가 있다
+- [x] GitHub 레포지토리에 코드가 올라가 있다
 - [ ] Vercel에서 프론트엔드가 정상 접속된다
 - [ ] 배포된 URL에서 실제 변환이 작동한다
 - [ ] Backend 와 Frontend 모두 Vercel 같이 Deploy 되도록 한다
@@ -114,11 +114,11 @@ AI도 사람도 "끝"의 기준이 명확해야 헤매지 않습니다. 기준 �
 
 | 영역 | 기술 | 비고 |
 |------|------|------|
-| 프론트엔드 | HTML5 / CSS3 / JavaScript (ES6+) | 프레임워크 없음 |
-| 백엔드 | Python 3.11+ / FastAPI / Uvicorn | |
-| AI 연동 | LangChain / langchain-upstage | |
+| 프론트엔드 | HTML5 / CSS3 (Tailwind CSS) / JS (ES6+) | Play CDN 사용 |
+| 백엔드 | Python 3.11+ / FastAPI / Uvicorn | FastAPI(0.136.1), Uvicorn(0.47.0) |
+| AI 연동 | LangChain / langchain-upstage | LangChain(1.3.1), Upstage(0.7.7) |
 | AI 모델 | Upstage Solar-Pro2 | |
-| 환경 변수 | python-dotenv | `.env` 파일 관리 |
+| 환경 변수 | python-dotenv | 1.2.2 |
 | 버전 관리 | Git / GitHub | |
 | 배포 | Vercel | 프론트엔드 정적 배포 |
 
@@ -129,7 +129,7 @@ AI도 사람도 "끝"의 기준이 명확해야 헤매지 않습니다. 기준 �
 python --version
 
 # 패키지 설치
-pip install fastapi uvicorn langchain python-dotenv langchain-upstage
+pip install fastapi==0.136.1 uvicorn==0.47.0 langchain==1.3.1 python-dotenv==1.2.2 langchain-upstage==0.7.7 pydantic==2.13.4
 
 # Git 설치 확인
 git --version
@@ -284,73 +284,35 @@ Content-Type: application/json
 
 ## 8. 단계별 구현 순서
 
-### STEP 1. 환경 준비 (30분)
+### ✅ STEP 1. 환경 준비 (30분) - 완료
 
-1. GitHub 레포지토리 생성 (`biztone-converter`)
-2. 디렉토리 구조 생성
-3. `.gitignore` 작성 — `.env` 반드시 포함
-4. Upstage API 키 발급 및 `.env` 파일 작성
-5. `requirements.txt` 작성 및 패키지 설치
-
----
-
-### STEP 2. 백엔드 구현 (90분)
-
-> 원칙 2 적용: 구현 전 Solar-Pro2 연동 방식을 먼저 확인하세요. (use context7)
-
-**구현 순서**
-
-1. `schemas.py` — 데이터 모델 정의(요청/응답 데이터 모델 정의)
-2. `templates.py` — 프롬프트 템플릿 작성(수신 대상별 프롬프트 템플릿 작성)
-3. `tone_converter.py` — 핵심 변환 로직 구현(LangChain + Solar-Pro2 연동)
-4. `convert.py` — API 라우터 구현
-5. `main.py` — 메인 앱 설정(FastAPI 앱 + CORS 설정)
-6. 로컬 서버 실행 및 테스트 (`uvicorn main:app --reload`)
-
-**핵심 코드 구조 참고**
-
-```python
-# schemas.py
-from pydantic import BaseModel
-
-class ConvertRequest(BaseModel):
-    text: str
-    target_audience: str  # boss / colleague / client / team
-
-class ConvertResponse(BaseModel):
-    converted_text: str
-    target_audience: str
-    original_text: str
-```
-
-```python
-# main.py
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from routers import convert
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 배포 시 실제 도메인으로 변경
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(convert.router, prefix="/api")
-```
+1. [x] GitHub 레포지토리 생성 (`BizTalk_GeminiCLI`)
+2. [x] 디렉토리 구조 생성
+3. [x] `.gitignore` 작성 — `.env` 반드시 포함
+4. [x] Upstage API 키 발급 및 `.env` 파일 작성
+5. [x] `requirements.txt` 작성 및 패키지 설치 (venv 가상환경 설정 완료)
 
 ---
 
-### STEP 3. 프론트엔드 구현 (60분)
+### ✅ STEP 2. 백엔드 구현 (90분) - 완료
+
+1. [x] `schemas.py` — 데이터 모델 정의
+2. [x] `templates.py` — 프롬프트 템플릿 작성
+3. [x] `tone_converter.py` — 핵심 변환 로직 구현 (override=True 적용)
+4. [x] `convert.py` — API 라우터 구현
+5. [x] `main.py` — 메인 앱 설정 및 정적 파일 라우팅
+6. [x] 로컬 서버 실행 및 API 테스트 완료
+
+---
+
+### ✅ STEP 3. 프론트엔드 구현 (60분) - 완료
 
 **구현 순서**
 
-1. `index.html` — HTML 구조 설계(화면 레이아웃 작성)
-2. `style.css` — CSS 스타일링(기본 스타일 적용)
-3. `app.js` — JavaScript 기능 구현(버튼 이벤트 + API 호출 + 결과 출력)
-4. 브라우저 테스트
+1. [x] `index.html` — HTML 구조 설계(화면 레이아웃 작성)
+2. [x] `style.css` — CSS 스타일링(기본 스타일 적용)
+3. [x] `app.js` — JavaScript 기능 구현(버튼 이벤트 + API 호출 + 결과 출력)
+4. [x] 브라우저 테스트 완료
 
 **핵심 JS 구조 참고**
 

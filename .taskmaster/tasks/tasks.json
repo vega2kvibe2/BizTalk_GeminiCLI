@@ -1,0 +1,151 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "프로젝트 초기화 및 환경 변수 설정",
+        "description": "개발 환경 구축을 위해 필요한 패키지를 설치하고 API 키 관리를 위한 설정을 진행합니다.",
+        "details": "python 3.11 이상 환경에서 venv를 생성하고, PRD에 명시된 버전의 패키지들을 설치합니다 (fastapi==0.136.1, uvicorn==0.47.0, langchain==1.3.1, python-dotenv==1.2.2, langchain-upstage==0.7.7, pydantic==2.13.4). root 디렉토리에 .env 파일을 생성하여 UPSTAGE_API_KEY를 설정하고 .gitignore에 추가합니다.",
+        "testStrategy": "pip list 명령어로 패키지 버전을 확인하고, dotenv.load_dotenv()를 통해 API 키가 정상적으로 로드되는지 확인하는 간단한 스크립트를 실행합니다.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:22:05.717Z"
+      },
+      {
+        "id": "2",
+        "title": "Pydantic 모델 및 프롬프트 템플릿 정의",
+        "description": "API 통신에 사용할 데이터 스키마와 수신 대상별 프롬프트 전략을 코드로 구현합니다.",
+        "details": "models/schemas.py에 ConvertRequest(text, target_audience)와 ConvertResponse(converted_text, target_audience, original_text) 클래스를 정의합니다. prompts/templates.py에 boss, colleague, client, team 별 시스템 프롬프트를 딕셔너리 형태로 작성합니다.",
+        "testStrategy": "Pydantic 모델에 유효하지 않은 데이터를 입력하여 validation 에러가 정상적으로 발생하는지 확인하고, 템플릿 딕셔너리에서 각 키별 메시지를 호출해 봅니다.",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:22:05.727Z"
+      },
+      {
+        "id": "3",
+        "title": "LangChain 기반 Upstage Solar-Pro2 변환 서비스 구현",
+        "description": "LangChain을 사용하여 Upstage Solar-Pro2 모델과 연동되는 핵심 변환 로직을 개발합니다.",
+        "details": "services/tone_converter.py에서 langchain_upstage의 ChatUpstage 클래스를 초기화합니다. ChatPromptTemplate을 사용하여 시스템 프롬프트와 사용자 입력을 결합하고, output_parser를 통해 텍스트 결과만 추출하도록 구성합니다.",
+        "testStrategy": "Mock 데이터를 사용하여 각 수신 대상별로 LLM이 적절한 말투로 변환을 수행하는지 단위 테스트를 진행합니다.",
+        "priority": "high",
+        "dependencies": [
+          "2"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:22:05.734Z"
+      },
+      {
+        "id": "4",
+        "title": "FastAPI 엔드포인트 구현 및 정적 파일 라우팅",
+        "description": "API 라우터를 설정하고 프론트엔드 파일을 서빙하기 위한 설정을 완료합니다.",
+        "details": "routers/convert.py에 /api/convert 엔드포인트를 구현하고 tone_converter 서비스를 호출합니다. main.py에서 FastAPI 앱을 생성하고, CORS 설정을 추가(allow_origins=['*'])하며, StaticFiles를 사용하여 frontend/ 디렉토리를 '/' 경로에 마운트합니다. /health 엔드포인트를 추가합니다.",
+        "testStrategy": "uvicorn을 실행한 후 /health 경로 접속 확인 및 Swagger UI(/docs)를 통해 /api/convert POST 요청을 테스트합니다.",
+        "priority": "high",
+        "dependencies": [
+          "3"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:22:05.741Z"
+      },
+      {
+        "id": "5",
+        "title": "프론트엔드 HTML 구조 설계",
+        "description": "사용자 인터페이스를 위한 HTML5 기본 레이아웃을 작성합니다.",
+        "details": "frontend/index.html에 텍스트 입력창(<textarea>), 수신 대상 선택 버튼 4개(data-target 속성 활용), 변환하기 버튼, 결과 출력창, 복사하기 버튼을 배치합니다. semantic tag를 사용하여 구조화합니다.",
+        "testStrategy": "브라우저에서 index.html을 열어 모든 UI 요소가 의도한 위치에 표시되는지 확인합니다.",
+        "priority": "medium",
+        "dependencies": [
+          "4"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:34:25.282Z"
+      },
+      {
+        "id": "6",
+        "title": "CSS 스타일링 및 UI 컴포넌트 디자인",
+        "description": "사용자 경험을 향상시키기 위한 CSS3 스타일링을 적용합니다.",
+        "details": "frontend/css/style.css에서 버튼의 활성화 상태(.active), 로딩 스피너 디자인, 결과 영역의 가독성을 위한 레이아웃을 정의합니다. flexbox나 grid를 사용하여 반응형 레이아웃을 구축합니다.",
+        "testStrategy": "브라우저 개발자 도구를 통해 각 요소의 스타일을 점검하고, 버튼 클릭 시 active 클래스에 따른 색상 변화를 확인합니다.",
+        "priority": "medium",
+        "dependencies": [
+          "5"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:34:25.289Z"
+      },
+      {
+        "id": "7",
+        "title": "JavaScript API 연동 로직 구현",
+        "description": "백엔드 API와 통신하여 실시간으로 말투를 변환하는 기능을 구현합니다.",
+        "details": "frontend/js/app.js에서 fetch API를 사용하여 /api/convert 엔드포인트에 POST 요청을 보냅니다. 사용자가 선택한 target_audience 값과 입력 텍스트를 JSON 바디에 담아 전송합니다. async/await 패턴을 사용합니다.",
+        "testStrategy": "변환하기 버튼 클릭 시 콘솔에 API 요청 로그가 찍히는지 확인하고, 실제 변환된 텍스트가 결과 창에 출력되는지 확인합니다.",
+        "priority": "high",
+        "dependencies": [
+          "4",
+          "6"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-19T08:34:25.297Z"
+      },
+      {
+        "id": "8",
+        "title": "결과 복사 및 로딩 상태 UX 고도화",
+        "description": "사용자 편의를 위한 클립보드 복사 기능과 로딩 표시 기능을 추가합니다.",
+        "details": "navigator.clipboard.writeText를 사용하여 결과 텍스트를 복사하는 기능을 구현합니다. API 호출 시작 시 로딩 스피너를 표시하고 버튼을 비활성화하며, 응답 완료 후 원래 상태로 복구하는 로직을 추가합니다.",
+        "testStrategy": "[복사하기] 버튼 클릭 후 메모장에 붙여넣기 테스트를 수행하고, 네트워크 속도를 제한한 상태에서 로딩 UI가 정상 작동하는지 확인합니다.",
+        "priority": "medium",
+        "dependencies": [
+          "7"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "9",
+        "title": "통합 테스트 및 예외 처리",
+        "description": "프론트엔드부터 백엔드, LLM까지의 전체 흐름을 점검하고 에러 상황을 처리합니다.",
+        "details": "입력값이 없을 때의 경고 처리, 서버 에러(500) 또는 API 키 오류 발생 시 사용자에게 알림 메시지를 표시하는 로직을 보완합니다. 모든 수신 대상에 대해 변환 품질을 최종 점검합니다.",
+        "testStrategy": "빈 텍스트 제출, 특수 문자 입력 등 다양한 케이스를 테스트하고, 의도적으로 서버를 꺼서 에러 팝업이 뜨는지 확인합니다.",
+        "priority": "medium",
+        "dependencies": [
+          "8"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "10",
+        "title": "Vercel 배포 및 최종 확인",
+        "description": "전체 프로젝트를 Vercel 플랫폼에 배포하여 라이브 환경에서 작동을 확인합니다.",
+        "details": "프로젝트 루트에 vercel.json을 작성하여 rewrites 설정을 추가합니다. GitHub 레포지토리를 Vercel에 연결하고, 대시보드에서 UPSTAGE_API_KEY 환경 변수를 등록한 뒤 배포를 실행합니다. app.js의 API_BASE를 실제 도메인으로 업데이트합니다.",
+        "testStrategy": "배포된 URL에 접속하여 실제 모바일 및 PC 브라우저에서 변환 기능이 완벽하게 작동하는지 최종 테스트합니다.",
+        "priority": "high",
+        "dependencies": [
+          "9"
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-05-19T08:34:25.298Z",
+      "taskCount": 10,
+      "completedCount": 7,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}
